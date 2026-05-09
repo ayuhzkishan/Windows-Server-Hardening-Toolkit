@@ -1,0 +1,15 @@
+name: windows-server-cis-hardening
+title: Windows Server CIS Benchmark Hardening Validation
+maintainer: Security Engineer
+copyright: MIT
+license: MIT
+summary: >
+  Chef InSpec compliance profile validating 21 CIS Benchmark controls
+  for Windows Server 2019. Covers Account Policies, Network Security,
+  Service Management, and Audit Policy categories.
+version: 1.0.0
+
+supports:
+  - platform-family: windows
+
+depends: []
