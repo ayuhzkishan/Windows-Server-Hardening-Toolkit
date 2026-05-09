@@ -1,0 +1,48 @@
+# ── Ansible ───────────────────────────────────────────────────
+*.retry
+.ansible/
+ansible/.ansible/
+
+# ── InSpec / Chef ─────────────────────────────────────────────
+inspec/.cache/
+vendor/
+
+# ── Reports (generated output — never commit) ─────────────────
+reports/*.html
+reports/*.json
+reports/*.xml
+!reports/.gitkeep
+
+# ── Vagrant ───────────────────────────────────────────────────
+.vagrant/
+
+# ── Credentials — NEVER commit these ─────────────────────────
+ansible/inventory/hosts.yml
+*.pem
+*.key
+*.pfx
+*.p12
+*_rsa
+*_rsa.pub
+secrets.yml
+vault.yml
+.vault_pass
+
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ── OS junk ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editor ────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo

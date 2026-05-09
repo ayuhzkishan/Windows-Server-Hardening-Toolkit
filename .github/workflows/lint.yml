@@ -1,0 +1,116 @@
+name: CI - Lint & Syntax Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Job 1: Ansible YAML Lint ─────────────────────────────────
+  ansible-lint:
+    name: Ansible Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Ansible and ansible-lint
+        run: |
+          pip install ansible ansible-lint
+
+      - name: Install ansible.windows collection
+        run: |
+          ansible-galaxy collection install ansible.windows community.windows
+
+      - name: Run ansible-lint on all playbooks and roles
+        run: |
+          ansible-lint ansible/site.yml \
+            ansible/roles/account_hardening/tasks/main.yml \
+            ansible/roles/network_hardening/tasks/main.yml \
+            ansible/roles/service_hardening/tasks/main.yml \
+            ansible/roles/audit_policy/tasks/main.yml \
+            ansible/roles/sysmon_deployment/tasks/main.yml
+
+  # ── Job 2: YAML Structure Validation ─────────────────────────
+  yaml-validate:
+    name: YAML Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint all YAML files
+        run: |
+          yamllint -d "{extends: relaxed, rules: {line-length: {max: 120}}}" \
+            ansible/
+
+  # ── Job 3: InSpec Syntax Check ────────────────────────────────
+  inspec-syntax:
+    name: InSpec Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Chef InSpec
+        run: |
+          curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec -v 6
+
+      - name: Validate InSpec profile structure
+        run: |
+          inspec check inspec/
+
+      - name: Check InSpec Ruby syntax on all controls
+        run: |
+          for f in inspec/controls/*.rb; do
+            echo "Checking syntax: $f"
+            ruby -c "$f"
+          done
+
+  # ── Job 4: PowerShell Syntax Check ───────────────────────────
+  powershell-syntax:
+    name: PowerShell Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q powershell
+
+      - name: Check PowerShell script syntax
+        run: |
+          $files = @(
+            "Run-Toolkit.ps1",
+            "scripts/Install-Sysmon.ps1",
+            "scripts/Set-AuditPolicy.ps1",
+            "scripts/Disable-VulnerableServices.ps1",
+            "drift/Detect-Drift.ps1"
+          )
+          $errors = 0
+          foreach ($file in $files) {
+            $null = [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $file),
+              [ref]$null,
+              [ref]$parseErrors
+            )
+            if ($parseErrors.Count -gt 0) {
+              Write-Error "Syntax errors in $file : $parseErrors"
+              $errors++
+            } else {
+              Write-Host "✅ $file - OK"
+            }
+          }
+          exit $errors
+        shell: pwsh
