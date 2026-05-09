@@ -1,0 +1,82 @@
+---
+# ============================================================
+# Role: network_hardening
+# CIS: Section 18 - Network Security Settings (6 controls)
+# ansible/roles/network_hardening/tasks/main.yml
+#
+# Uses win_regedit for all registry-level network hardening.
+# Each task creates the key path if it does not already exist,
+# making this fully idempotent.
+# ============================================================
+
+# ── CIS 18.5.4.1 ──────────────────────────────────────────────
+# LLMNR (Link-Local Multicast Name Resolution) is exploited by
+# tools like Responder to intercept name resolution traffic.
+- name: "CIS 18.5.4.1 | Disable LLMNR to prevent name resolution poisoning"
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Policies\Microsoft\Windows NT\DNSClient
+    name: EnableMulticast
+    data: 0
+    type: dword
+  tags: [cis_18_5_4_1, llmnr]
+
+# ── CIS 18.5.5.1 ──────────────────────────────────────────────
+# NetBIOS Node Type 2 = P-Node (point-to-point, WINS only).
+# Disabling broadcast-based name resolution prevents NBNS poisoning.
+- name: "CIS 18.5.5.1 | Set NetBIOS Node Type to P-Node (disable broadcast)"
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters
+    name: NodeType
+    data: 2
+    type: dword
+  tags: [cis_18_5_5_1, netbios]
+
+# ── CIS 18.5.14.1 ─────────────────────────────────────────────
+# WDigest stores plaintext credentials in LSASS memory.
+# Disabling it prevents tools like Mimikatz from extracting them.
+- name: "CIS 18.5.14.1 | Disable WDigest authentication (prevents plaintext creds in LSASS)"
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest
+    name: UseLogonCredential
+    data: 0
+    type: dword
+  tags: [cis_18_5_14_1, wdigest]
+
+# ── CIS 18.9.97.2 ─────────────────────────────────────────────
+# LSA Protection (RunAsPPL) prevents unauthorized code from
+# reading the LSASS process memory — key Mimikatz mitigation.
+- name: "CIS 18.9.97.2 | Enable LSA Protection (RunAsPPL) against credential dumping"
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\Lsa
+    name: RunAsPPL
+    data: 1
+    type: dword
+  tags: [cis_18_9_97_2, lsa]
+
+# ── CIS 18.5.8.1 ──────────────────────────────────────────────
+# SMB signing prevents man-in-the-middle and NTLM relay attacks.
+- name: "CIS 18.5.8.1 | Enable SMB Server digital signing (always)"
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\LanManServer\Parameters
+    name: RequireSecuritySignature
+    data: 1
+    type: dword
+  tags: [cis_18_5_8_1, smb]
+
+- name: "CIS 18.5.8.1 | Enable SMB Server digital signing (enabled)"
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\LanManServer\Parameters
+    name: EnableSecuritySignature
+    data: 1
+    type: dword
+  tags: [cis_18_5_8_1, smb]
+
+# ── CIS 18.6.1 ────────────────────────────────────────────────
+# Disabling IPv6 reduces the attack surface if it is not used.
+- name: "CIS 18.6.1 | Disable IPv6 (reduces attack surface if unused)"
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters
+    name: DisabledComponents
+    data: 255
+    type: dword
+  tags: [cis_18_6_1, ipv6]

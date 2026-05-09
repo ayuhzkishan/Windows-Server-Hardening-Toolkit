@@ -1,0 +1,56 @@
+---
+# ============================================================
+# Role: sysmon_deployment
+# ansible/roles/sysmon_deployment/tasks/main.yml
+#
+# Downloads Sysmon from Microsoft Sysinternals and deploys
+# the SwiftOnSecurity high-fidelity configuration.
+# Sysmon provides kernel-level telemetry for SIEM integration.
+# ============================================================
+
+- name: "SYSMON | Ensure Sysmon install directory exists"
+  ansible.windows.win_file:
+    path: "{{ sysmon_install_path }}"
+    state: directory
+
+- name: "SYSMON | Download Sysmon zip from Sysinternals"
+  ansible.windows.win_get_url:
+    url: "{{ sysmon_download_url }}"
+    dest: "{{ sysmon_install_path }}\\Sysmon.zip"
+
+- name: "SYSMON | Extract Sysmon zip"
+  community.windows.win_unzip:
+    src: "{{ sysmon_install_path }}\\Sysmon.zip"
+    dest: "{{ sysmon_install_path }}"
+    delete_archive: false
+
+- name: "SYSMON | Download SwiftOnSecurity configuration"
+  ansible.windows.win_get_url:
+    url: "{{ sysmon_config_url }}"
+    dest: "{{ sysmon_install_path }}\\sysmonconfig.xml"
+
+- name: "SYSMON | Check if Sysmon service already installed"
+  ansible.windows.win_service_info:
+    name: Sysmon64
+  register: sysmon_service_info
+  ignore_errors: true
+
+- name: "SYSMON | Install Sysmon with SwiftOnSecurity config (first-time)"
+  ansible.windows.win_shell: >
+    "{{ sysmon_install_path }}\Sysmon64.exe" -accepteula -i
+    "{{ sysmon_install_path }}\sysmonconfig.xml"
+  when: sysmon_service_info.services | length == 0
+  tags: [sysmon_install]
+
+- name: "SYSMON | Update Sysmon config if already installed (idempotent)"
+  ansible.windows.win_shell: >
+    "{{ sysmon_install_path }}\Sysmon64.exe" -c
+    "{{ sysmon_install_path }}\sysmonconfig.xml"
+  when: sysmon_service_info.services | length > 0
+  tags: [sysmon_update]
+
+- name: "SYSMON | Ensure Sysmon service is running and set to auto-start"
+  ansible.windows.win_service:
+    name: Sysmon64
+    start_mode: auto
+    state: started

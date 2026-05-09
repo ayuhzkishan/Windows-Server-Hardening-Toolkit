@@ -1,0 +1,73 @@
+---
+# ============================================================
+# Role: account_hardening
+# CIS: Section 1 - Account Policies (7 controls)
+# ansible/roles/account_hardening/tasks/main.yml
+#
+# Uses win_security_policy module which maps directly to the
+# Windows Local Security Policy (secedit.exe) settings.
+# All tasks are idempotent.
+# ============================================================
+
+# ── CIS 1.1.1 ─────────────────────────────────────────────────
+- name: "CIS 1.1.1 | Set password history to {{ password_history_count }} passwords remembered"
+  ansible.windows.win_security_policy:
+    section: System Access
+    key: PasswordHistorySize
+    value: "{{ password_history_count }}"
+  tags: [cis_1_1_1]
+
+# ── CIS 1.1.2 ─────────────────────────────────────────────────
+- name: "CIS 1.1.2 | Set maximum password age to {{ max_password_age }} days"
+  ansible.windows.win_security_policy:
+    section: System Access
+    key: MaximumPasswordAge
+    value: "{{ max_password_age }}"
+  tags: [cis_1_1_2]
+
+# ── CIS 1.1.3 ─────────────────────────────────────────────────
+- name: "CIS 1.1.3 | Set minimum password age to {{ min_password_age }} day(s)"
+  ansible.windows.win_security_policy:
+    section: System Access
+    key: MinimumPasswordAge
+    value: "{{ min_password_age }}"
+  tags: [cis_1_1_3]
+
+# ── CIS 1.1.4 ─────────────────────────────────────────────────
+- name: "CIS 1.1.4 | Set minimum password length to {{ min_password_length }} characters"
+  ansible.windows.win_security_policy:
+    section: System Access
+    key: MinimumPasswordLength
+    value: "{{ min_password_length }}"
+  tags: [cis_1_1_4]
+
+# ── CIS 1.1.5 ─────────────────────────────────────────────────
+- name: "CIS 1.1.5 | Enable password complexity requirements"
+  ansible.windows.win_security_policy:
+    section: System Access
+    key: PasswordComplexity
+    value: "{{ password_complexity }}"
+  tags: [cis_1_1_5]
+
+# ── CIS 1.2.1 ─────────────────────────────────────────────────
+- name: "CIS 1.2.1 | Set account lockout threshold to {{ lockout_threshold }} invalid attempts"
+  ansible.windows.win_security_policy:
+    section: System Access
+    key: LockoutBadCount
+    value: "{{ lockout_threshold }}"
+  tags: [cis_1_2_1]
+
+# ── CIS 1.2.2 ─────────────────────────────────────────────────
+- name: "CIS 1.2.2 | Set account lockout duration to {{ lockout_duration }} minutes"
+  ansible.windows.win_security_policy:
+    section: System Access
+    key: LockoutDuration
+    value: "{{ lockout_duration }}"
+  tags: [cis_1_2_2]
+
+- name: "CIS 1.2.2 | Set lockout observation window to {{ lockout_observation_window }} minutes"
+  ansible.windows.win_security_policy:
+    section: System Access
+    key: ResetLockoutCount
+    value: "{{ lockout_observation_window }}"
+  tags: [cis_1_2_2]

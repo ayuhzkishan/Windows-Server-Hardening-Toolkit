@@ -1,0 +1,12 @@
+---
+# Default variables for the account_hardening role.
+# Override these in ansible/group_vars/all.yml or host_vars/.
+
+password_history_count: 24
+max_password_age: 60
+min_password_age: 1
+min_password_length: 14
+password_complexity: 1
+lockout_threshold: 5
+lockout_duration: 30
+lockout_observation_window: 30

@@ -1,0 +1,7 @@
+---
+# Default variables for the sysmon_deployment role.
+
+sysmon_download_url: "https://download.sysinternals.com/files/Sysmon.zip"
+sysmon_config_url: "https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml"
+sysmon_install_path: "C:\\Windows\\Sysmon"
+sysmon_service_name: "Sysmon64"

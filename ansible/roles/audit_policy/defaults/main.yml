@@ -1,0 +1,42 @@
+---
+# Default variables for the audit_policy role.
+# Uses auditpol.exe subcategory names directly.
+
+audit_settings:
+  - subcategory: "Credential Validation"
+    cis_id: "17.1.1"
+    success: "enable"
+    failure: "enable"
+
+  - subcategory: "Application Group Management"
+    cis_id: "17.2.1"
+    success: "enable"
+    failure: "enable"
+
+  - subcategory: "Security Group Management"
+    cis_id: "17.2.1"
+    success: "enable"
+    failure: "enable"
+
+  - subcategory: "User Account Management"
+    cis_id: "17.2.1"
+    success: "enable"
+    failure: "enable"
+
+  - subcategory: "Account Lockout"
+    cis_id: "17.5.1"
+    success: "disable"
+    failure: "enable"
+
+  - subcategory: "Logon"
+    cis_id: "17.5.4"
+    success: "enable"
+    failure: "enable"
+
+  - subcategory: "Process Creation"
+    cis_id: "BONUS"
+    success: "enable"
+    failure: "disable"
+
+# Registry: Enable command line args in Event ID 4688
+enable_cmdline_logging: 1

@@ -1,0 +1,27 @@
+---
+# Default variables for the service_hardening role.
+
+# List of services to disable (CIS 5.29, 5.30, 5.41)
+# Add or remove service names to adjust scope.
+services_to_disable:
+  - name: Spooler
+    cis_id: "5.29"
+    description: "Print Spooler (PrintNightmare mitigation)"
+  - name: RemoteRegistry
+    cis_id: "5.30"
+    description: "Remote Registry"
+  - name: XboxGipSvc
+    cis_id: "5.41"
+    description: "Xbox Accessory Management"
+  - name: XblAuthManager
+    cis_id: "5.41"
+    description: "Xbox Live Auth Manager"
+  - name: XblGameSave
+    cis_id: "5.41"
+    description: "Xbox Live Game Save"
+  - name: XboxNetApiSvc
+    cis_id: "5.41"
+    description: "Xbox Live Networking"
+
+# WinRM is tagged 'never' in tasks — not controlled by this flag.
+# See tasks/main.yml for the explicit warning comment.

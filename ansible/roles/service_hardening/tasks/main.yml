@@ -1,0 +1,82 @@
+---
+# ============================================================
+# Role: service_hardening
+# CIS: Section 5 - Service Management (4 controls)
+# ansible/roles/service_hardening/tasks/main.yml
+#
+# Uses win_service module to set services to 'disabled'.
+# State is also set to 'stopped' to take immediate effect.
+# Idempotent: Ansible will only act if current state differs.
+# ============================================================
+
+# ── CIS 5.29 ──────────────────────────────────────────────────
+# The Print Spooler service is exploited by PrintNightmare
+# (CVE-2021-1675, CVE-2021-34527). Disabled on all servers
+# that are NOT print servers.
+- name: "CIS 5.29 | Disable Print Spooler service (PrintNightmare mitigation)"
+  ansible.windows.win_service:
+    name: Spooler
+    start_mode: disabled
+    state: stopped
+  tags: [cis_5_29, print_spooler]
+
+# ── CIS 5.30 ──────────────────────────────────────────────────
+# Remote Registry enables remote modification of the registry.
+# Disabling it eliminates a lateral movement vector.
+- name: "CIS 5.30 | Disable Remote Registry service"
+  ansible.windows.win_service:
+    name: RemoteRegistry
+    start_mode: disabled
+    state: stopped
+  tags: [cis_5_30, remote_registry]
+
+# ── CIS 5.39 ──────────────────────────────────────────────────
+# WinRM (Windows Remote Management) is the Ansible transport.
+# This task is tagged separately so it can be skipped when
+# Ansible itself relies on WinRM — it should only be applied
+# AFTER Ansible has completed all other tasks, or when another
+# transport (e.g., VPN/jump host) is used.
+- name: "CIS 5.39 | Disable WinRM service if not needed for remote management"
+  ansible.windows.win_service:
+    name: WinRM
+    start_mode: disabled
+    state: stopped
+  tags: [cis_5_39, winrm, never]
+  # NOTE: Tagged 'never' so it does NOT run by default.
+  # Explicitly include with: --tags winrm
+  # Only apply when you have an alternative remote access method.
+
+# ── CIS 5.41 ──────────────────────────────────────────────────
+# Xbox services have no place on a server OS.
+# Disabling them reduces unnecessary attack surface.
+- name: "CIS 5.41 | Disable Xbox Accessory Management Service"
+  ansible.windows.win_service:
+    name: XboxGipSvc
+    start_mode: disabled
+    state: stopped
+  ignore_errors: true   # Service may not exist on Server Core
+  tags: [cis_5_41, xbox]
+
+- name: "CIS 5.41 | Disable Xbox Live Auth Manager"
+  ansible.windows.win_service:
+    name: XblAuthManager
+    start_mode: disabled
+    state: stopped
+  ignore_errors: true
+  tags: [cis_5_41, xbox]
+
+- name: "CIS 5.41 | Disable Xbox Live Game Save"
+  ansible.windows.win_service:
+    name: XblGameSave
+    start_mode: disabled
+    state: stopped
+  ignore_errors: true
+  tags: [cis_5_41, xbox]
+
+- name: "CIS 5.41 | Disable Xbox Live Networking Service"
+  ansible.windows.win_service:
+    name: XboxNetApiSvc
+    start_mode: disabled
+    state: stopped
+  ignore_errors: true
+  tags: [cis_5_41, xbox]

@@ -1,0 +1,69 @@
+---
+# ============================================================
+# Role: audit_policy
+# CIS: Section 17 - Advanced Audit Policy (4 controls)
+# ansible/roles/audit_policy/tasks/main.yml
+#
+# Uses win_shell to call auditpol.exe — the authoritative
+# Windows CLI for Advanced Audit Policy configuration.
+# This is more reliable than Group Policy for standalone
+# servers since it takes effect immediately without a reboot.
+#
+# Audit values: Success, Failure, Success and Failure, No Auditing
+# ============================================================
+
+# ── CIS 17.1.1 ────────────────────────────────────────────────
+# Credential Validation auditing catches brute-force and
+# pass-the-hash attacks at the authentication layer.
+- name: "CIS 17.1.1 | Audit Credential Validation - Success and Failure"
+  ansible.windows.win_shell: >
+    auditpol /set /subcategory:"Credential Validation" /success:enable /failure:enable
+  changed_when: false   # auditpol always exits 0 — change detection via InSpec
+  tags: [cis_17_1_1, audit]
+
+# ── CIS 17.2.1 ────────────────────────────────────────────────
+# Application Group Management auditing detects unauthorized
+# privilege escalation through group membership changes.
+- name: "CIS 17.2.1 | Audit Application Group Management - Success and Failure"
+  ansible.windows.win_shell: >
+    auditpol /set /subcategory:"Application Group Management" /success:enable /failure:enable
+  changed_when: false
+  tags: [cis_17_2_1, audit]
+
+# ── CIS 17.5.1 ────────────────────────────────────────────────
+# Account Lockout failure events are critical for detecting
+# ongoing brute-force and password-spray attacks.
+- name: "CIS 17.5.1 | Audit Account Lockout - Failure"
+  ansible.windows.win_shell: >
+    auditpol /set /subcategory:"Account Lockout" /failure:enable
+  changed_when: false
+  tags: [cis_17_5_1, audit]
+
+# ── CIS 17.5.4 ────────────────────────────────────────────────
+# Logon Success and Failure events form the foundation of any
+# SIEM detection rule — essential for incident response.
+- name: "CIS 17.5.4 | Audit Logon Events - Success and Failure"
+  ansible.windows.win_shell: >
+    auditpol /set /subcategory:"Logon" /success:enable /failure:enable
+  changed_when: false
+  tags: [cis_17_5_4, audit]
+
+# ── BONUS: Process Creation ────────────────────────────────────
+# Not a numbered CIS control but recommended alongside Sysmon.
+# Logs every process creation event in the Security event log.
+- name: "BONUS | Enable Process Creation auditing (supports Sysmon correlation)"
+  ansible.windows.win_shell: >
+    auditpol /set /subcategory:"Process Creation" /success:enable
+  changed_when: false
+  tags: [process_creation, audit]
+
+# ── Enable Command Line in Process Events ─────────────────────
+# Extends Process Creation events to record the full command line.
+# Critical for detecting living-off-the-land (LotL) attacks.
+- name: "BONUS | Enable command line logging in process creation events"
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit
+    name: ProcessCreationIncludeCmdLine_Enabled
+    data: 1
+    type: dword
+  tags: [cmdline_logging, audit]
