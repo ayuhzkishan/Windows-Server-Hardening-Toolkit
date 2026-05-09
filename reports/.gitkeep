@@ -1,0 +1,3 @@
+# This file ensures the reports/ directory is tracked by git.
+# Actual report files (*.html, *.json) are excluded via .gitignore.
+# Reports are generated at runtime by Run-Toolkit.ps1 and Detect-Drift.ps1.
