@@ -1,0 +1,44 @@
+# ============================================================
+# Ansible Inventory Template
+# ansible/inventory/hosts.yml.example
+#
+# COPY THIS FILE to hosts.yml and fill in your server details.
+# hosts.yml is gitignored to prevent credential leaks.
+#
+#   cp ansible/inventory/hosts.yml.example ansible/inventory/hosts.yml
+# ============================================================
+
+all:
+  children:
+    windows_servers:
+      hosts:
+
+        # ── Single server example ──────────────────────────────
+        win-server-01:
+          ansible_host: 192.168.56.10       # ← Change to your server IP
+          ansible_user: Administrator        # ← Windows admin username
+          ansible_password: "ChangeMe123!"  # ← Use ansible-vault to encrypt
+          ansible_connection: winrm
+          ansible_winrm_transport: basic
+          ansible_winrm_server_cert_validation: ignore
+          ansible_port: 5985
+
+        # ── Additional servers (uncomment and duplicate as needed)
+        # win-server-02:
+        #   ansible_host: 192.168.56.11
+        #   ansible_user: Administrator
+        #   ansible_password: "ChangeMe123!"
+        #   ansible_connection: winrm
+        #   ansible_winrm_transport: basic
+        #   ansible_winrm_server_cert_validation: ignore
+        #   ansible_port: 5985
+
+  # ── Group-level variables (apply to ALL hosts above) ────────
+  vars:
+    ansible_connection: winrm
+    ansible_winrm_transport: basic
+    ansible_winrm_server_cert_validation: ignore
+
+# ── PRODUCTION TIP: Encrypt passwords with ansible-vault ──────
+# ansible-vault encrypt_string 'YourPassword' --name 'ansible_password'
+# Then run playbooks with: ansible-playbook site.yml --ask-vault-pass

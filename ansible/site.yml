@@ -1,0 +1,55 @@
+---
+# ============================================================
+# Windows Server Hardening Toolkit - Main Playbook
+# ansible/site.yml
+#
+# Entry point for the entire hardening suite.
+# Applies all enabled roles to the target Windows servers.
+# Each role is idempotent: safe to run multiple times.
+# ============================================================
+
+- name: Windows Server Hardening - CIS Benchmark Automation
+  hosts: windows_servers
+  gather_facts: true
+
+  pre_tasks:
+    - name: Display hardening scope
+      ansible.builtin.debug:
+        msg: >
+          Starting CIS hardening on {{ inventory_hostname }}
+          ({{ ansible_os_family }} {{ ansible_distribution_version }}).
+          Enabled roles:
+          account={{ enable_account_hardening }},
+          network={{ enable_network_hardening }},
+          services={{ enable_service_hardening }},
+          audit={{ enable_audit_policy }},
+          sysmon={{ enable_sysmon }}
+
+  roles:
+    - role: account_hardening
+      when: enable_account_hardening | bool
+      tags: [account_hardening, account]
+
+    - role: network_hardening
+      when: enable_network_hardening | bool
+      tags: [network_hardening, network]
+
+    - role: service_hardening
+      when: enable_service_hardening | bool
+      tags: [service_hardening, services]
+
+    - role: audit_policy
+      when: enable_audit_policy | bool
+      tags: [audit_policy, audit]
+
+    - role: sysmon_deployment
+      when: enable_sysmon | bool
+      tags: [sysmon_deployment, sysmon]
+
+  post_tasks:
+    - name: Hardening complete
+      ansible.builtin.debug:
+        msg: >
+          ✅ CIS hardening complete on {{ inventory_hostname }}.
+          Run InSpec validation: inspec exec ../inspec/ -t winrm://...
+          See docs/cis_control_mapping.md for full control traceability.

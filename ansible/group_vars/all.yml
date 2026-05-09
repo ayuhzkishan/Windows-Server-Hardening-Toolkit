@@ -1,0 +1,52 @@
+---
+# ============================================================
+# Windows Server Hardening Toolkit - Global Configuration
+# ansible/group_vars/all.yml
+#
+# Use this file to toggle entire control categories on or off,
+# and to tune policy thresholds to your environment's needs.
+# ============================================================
+
+# ── CONTROL CATEGORY TOGGLES ─────────────────────────────────
+# Set to 'false' to skip an entire role without removing it
+enable_account_hardening: true   # CIS Section 1  (7 controls)
+enable_network_hardening: true   # CIS Section 18 (6 controls)
+enable_service_hardening: true   # CIS Section 5  (4 controls)
+enable_audit_policy: true        # CIS Section 17 (4 controls)
+enable_sysmon: true              # Sysmon telemetry
+
+# ── ACCOUNT POLICY SETTINGS (CIS Section 1) ──────────────────
+# CIS 1.1.1 - Password history
+password_history_count: 24
+
+# CIS 1.1.2 - Maximum password age (days)
+max_password_age: 60
+
+# CIS 1.1.3 - Minimum password age (days)
+min_password_age: 1
+
+# CIS 1.1.4 - Minimum password length
+min_password_length: 14
+
+# CIS 1.1.5 - Password complexity (0=disabled, 1=enabled)
+password_complexity: 1
+
+# ── LOCKOUT POLICY SETTINGS (CIS Section 1.2) ────────────────
+# CIS 1.2.1 - Lockout threshold (failed attempts before lockout)
+lockout_threshold: 5
+
+# CIS 1.2.2 - Lockout duration (minutes)
+lockout_duration: 30
+
+# Lockout observation window (minutes)
+lockout_observation_window: 30
+
+# ── SYSMON CONFIGURATION ──────────────────────────────────────
+# URL to download Sysmon from (Microsoft Sysinternals)
+sysmon_download_url: "https://download.sysinternals.com/files/Sysmon.zip"
+
+# URL for SwiftOnSecurity's high-quality Sysmon config
+sysmon_config_url: "https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml"
+
+# Local install path on the target Windows server
+sysmon_install_path: "C:\\Windows\\Sysmon"
